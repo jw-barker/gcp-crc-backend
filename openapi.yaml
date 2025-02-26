@@ -1,0 +1,59 @@
+swagger: '2.0'
+info:
+  title: Visitor Counter API
+  version: 1.0.0
+paths:
+  /visit:
+    get:
+      operationId: visit
+      summary: Increment Visitor Counter
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            properties:
+              count:
+                type: integer
+            type: object
+        '500':
+          description: Server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      x-google-backend:
+        address: https://${API_GATEWAY_URL}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      x-google-cors:
+        allowOrigins:
+        - https://jw-barker.com
+        allowMethods:
+        - GET
+        - OPTIONS
+        allowHeaders:
+        - Content-Type
+        - Authorization
+        - X-Requested-With
+        maxAge: 3600
+
+    options:
+      operationId: preflightVisit
+      summary: CORS preflight for /visit
+      responses:
+        '204':
+          description: CORS preflight response
+      x-google-backend:
+        address: https://${API_GATEWAY_URL}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      x-google-cors:
+        allowOrigins:
+        - https://jw-barker.com
+        allowMethods:
+        - GET
+        - OPTIONS
+        allowHeaders:
+        - Content-Type
+        - Authorization
+        - X-Requested-With
+        maxAge: 3600
