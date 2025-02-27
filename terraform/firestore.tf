@@ -13,7 +13,23 @@ resource "null_resource" "visitor_counter" {
 
   provisioner "local-exec" {
     command = <<EOT
-      gcloud datastore entities insert visitorCounter --project=${var.project_id} --key-path="visitorCounter/counter" --properties=name=counter,count=46
+      set -e
+
+      # Validate that the Firestore database is in DATASTORE_MODE
+      DB_MODE=$(gcloud firestore databases describe --project=${var.project_id} --format="value(type)")
+      if [ "$DB_MODE" != "DATASTORE_MODE" ]; then
+        echo "Error: Firestore is not in DATASTORE_MODE. Current mode is $DB_MODE."
+        exit 1
+      fi
+
+      # Insert entity into Firestore (Datastore mode)
+      echo "Inserting entity into Firestore (Datastore mode)..."
+      gcloud datastore import gs://bucket_name/path_to_export/export_name.overall_export_metadata \
+        --project=${var.project_id} \
+        --async
+
+      # Verify insertion
+      gcloud datastore indexes list --project=${var.project_id}
     EOT
   }
 }

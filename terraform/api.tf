@@ -1,39 +1,48 @@
-# Enable the API Gateway service
+# Enable the required GCP services
 resource "google_project_service" "enable_apis" {
   for_each = toset(local.apis)
   project  = var.project_id
   service  = each.key
-  disable_on_destroy = false
+  disable_on_destroy = true
 }
 
 # Define the API Gateway API
 resource "google_api_gateway_api" "visitor_counter_api" {
-  provider    = google-beta
-  api_id      = "visitor-counter-api"
-  depends_on  = [google_project_service.enable_apis]
+  provider   = google-beta
+  api_id     = "visitor-counter-api"
+  depends_on = [google_project_service.enable_apis["apigateway.googleapis.com"]]
 }
 
 # API Gateway API Configuration
 resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   provider = google-beta
-  api      = "projects/${var.project_id}/locations/global/apis/visitor-counter-api"
+  api      = google_api_gateway_api.visitor_counter_api.id
+
   openapi_documents {
     document {
       path     = "openapi.yaml"
       contents = filebase64("${path.module}/openapi.yaml")
     }
   }
+
+  # Ensure the gateway is deleted before the config is removed
+  depends_on = [
+    google_api_gateway_gateway.visitor_counter_gateway
+  ]
 }
 
-# API Gateway without location (global scope)
+# Create the API Gateway
 resource "google_api_gateway_gateway" "visitor_counter_gateway" {
-  provider    = google-beta
-  gateway_id  = "visitor-counter-gateway"
-  api_config  = google_api_gateway_api_config.visitor_counter_api_config.name
+  provider   = google-beta
+  gateway_id = "visitor-counter-gateway"
+  api_config = google_api_gateway_api_config.visitor_counter_api_config.id
 
-  depends_on = [google_api_gateway_api_config.visitor_counter_api_config]
+  depends_on = [
+    google_api_gateway_api_config.visitor_counter_api_config
+  ]
 }
 
+# Define the list of required APIs
 locals {
   apis = [
     "analyticshub.googleapis.com",
