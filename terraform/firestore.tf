@@ -15,7 +15,7 @@ resource "null_resource" "visitor_counter" {
     command = <<EOT
       set -e
 
-      # Validate that the Firestore database is in DATASTORE_MODE
+      echo "Validating Firestore mode..."
       DB_MODE=$(gcloud firestore databases describe --project=${var.project_id} --format="value(type)")
       if [ "$DB_MODE" != "DATASTORE_MODE" ]; then
         echo "Error: Firestore is not in DATASTORE_MODE. Current mode is $DB_MODE."
@@ -24,12 +24,19 @@ resource "null_resource" "visitor_counter" {
 
       # Insert entity into Firestore (Datastore mode)
       echo "Inserting entity into Firestore (Datastore mode)..."
-      gcloud datastore import gs://bucket_name/path_to_export/export_name.overall_export_metadata \
+      gcloud firestore documents create \
         --project=${var.project_id} \
-        --async
+        --database="(default)" \
+        --collection=visitorCounter \
+        --document-id=counter \
+        --fields=name=counter,count=46
 
       # Verify insertion
-      gcloud datastore indexes list --project=${var.project_id}
+      echo "Listing Firestore documents..."
+      gcloud firestore documents list \
+        --project=${var.project_id} \
+        --database="(default)" \
+        --collection-group=visitorCounter
     EOT
   }
 }
