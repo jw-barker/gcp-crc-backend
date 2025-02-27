@@ -16,7 +16,7 @@ resource "google_api_gateway_api" "visitor_counter_api" {
 # API Gateway API Configuration
 resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   provider = google-beta
-  api      = google_api_gateway_api.visitor_counter_api.id
+  api      = google_api_gateway_api.id
 
   openapi_documents {
     document {
@@ -32,7 +32,7 @@ resource "google_api_gateway_gateway" "visitor_counter_gateway" {
   gateway_id = "visitor-counter-gateway"
   api_config = google_api_gateway_api_config.visitor_counter_api_config.id
 
-  # Ensure correct creation order
+  # Ensure correct creation order and avoid deletion conflicts
   depends_on = [
     google_api_gateway_api.visitor_counter_api,
     google_api_gateway_api_config.visitor_counter_api_config
@@ -58,10 +58,10 @@ locals {
     "containerregistry.googleapis.com",
     "dataform.googleapis.com",
     "dataplex.googleapis.com",
-    "datastore.googleapis.com",
+    "datastore.googleapis.com",             
     "firebaserules.googleapis.com",
-    "firestore.googleapis.com",
-    "firestoredatabase.googleapis.com",
+    "firestore.googleapis.com",             
+    "firestoredatabase.googleapis.com",     
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "logging.googleapis.com",
