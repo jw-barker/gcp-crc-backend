@@ -24,11 +24,6 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
       contents = filebase64("${path.module}/openapi.yaml")
     }
   }
-
-  # Ensure the gateway is deleted before the config is removed
-  depends_on = [
-    google_api_gateway_gateway.visitor_counter_gateway
-  ]
 }
 
 # Create the API Gateway
@@ -37,7 +32,9 @@ resource "google_api_gateway_gateway" "visitor_counter_gateway" {
   gateway_id = "visitor-counter-gateway"
   api_config = google_api_gateway_api_config.visitor_counter_api_config.id
 
+  # Ensure correct creation order
   depends_on = [
+    google_api_gateway_api.visitor_counter_api,
     google_api_gateway_api_config.visitor_counter_api_config
   ]
 }
