@@ -19,7 +19,7 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   api      = google_api_gateway_api.visitor_counter_api.api_id
 
   # Generate a new config ID for each deployment
-  api_config_id = "visitor-counter-config-v${timestamp()}"
+  api_config_id = "visitor-counter-config-v${replace(timestamp(), "[:TZ-]", "")}"
 
   openapi_documents {
     document {
@@ -67,8 +67,7 @@ locals {
     "dataplex.googleapis.com",
     "datastore.googleapis.com",             
     "firebaserules.googleapis.com",
-    "firestore.googleapis.com",             
-    "firestoredatabase.googleapis.com",     
+    "firestore.googleapis.com",                 
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "logging.googleapis.com",

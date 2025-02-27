@@ -6,14 +6,21 @@ resource "google_firestore_database" "default" {
   type        = "DATASTORE_MODE"
 }
 
-# Create a Firestore document in Datastore mode
-resource "google_firestore_document" "visitor_counter" {
-  project     = var.project_id
-  database    = "(default)"
-  collection  = "visitorCounter"
-  document_id = "counter"
+# Create a Datastore entity (compatible with Firestore in Datastore mode)
+resource "google_datastore_entity" "visitor_counter" {
+  project = var.project_id
+  kind    = "visitorCounter"
 
-  fields = jsonencode({
+  # Define the entity key
+  key {
+    path {
+      kind = "visitorCounter"
+      name = "counter"  # Document ID equivalent
+    }
+  }
+
+  # Define the entity properties
+  properties = jsonencode({
     name  = { stringValue = "counter" }
     count = { integerValue = 46 }
   })
