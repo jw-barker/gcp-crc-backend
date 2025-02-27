@@ -1,37 +1,71 @@
-resource "google_project_service" "enable_api_gateway" {
-  project = var.project_id
-  service = "apigateway.googleapis.com"
+# Enable the API Gateway service
+resource "google_project_service" "enable_apis" {
+  for_each = toset(local.apis)
+  project  = var.project_id
+  service  = each.key
 }
 
-resource "google_apigateway_api" "visitor_counter_api" {
-  api_id = "visitor-counter-api"
-  display_name = "visitor-counter-api"
-  depends_on = [google_project_service.enable_api_gateway]
+# Define the API Gateway API
+resource "google_api_gateway_api" "visitor_counter_api" {
+  provider    = google-beta
+  api_id      = "visitor-counter-api"
+  depends_on  = [google_project_service.enable_apis]
 }
 
-resource "google_apigateway_api_config" "visitor_counter_api_config" {
-  api       = google_apigateway_api.visitor_counter_api.id
-  config_id = "visitor-counter-api-config"
-
-  gateway_config {
-    backend {
-      google_service_account = var.service_account
-      path_translation = "APPEND_PATH_TO_ADDRESS"
-      address = google_cloud_run_service.visitor_counter.status[0].url
-    }
-  }
-
+# API Gateway API Configuration
+resource "google_api_gateway_api_config" "visitor_counter_api_config" {
+  provider = google-beta
+  api      = "projects/${var.project_id}/locations/global/apis/visitor-counter-api"
   openapi_documents {
     document {
-      path = "${path.module}/openapi.yaml"
+      path     = "openapi.yaml"
+      contents = filebase64("${path.module}/openapi.yaml")
     }
   }
 }
 
-# Create the Gateway
-resource "google_apigateway_gateway" "visitor_counter_gateway" {
-  gateway_id   = "visitor-counter-gateway"
-  display_name = "visitor-counter-gateway"
-  api_config   = google_apigateway_api_config.visitor_counter_api_config.id
-  location     = var.region
+# API Gateway without location (global scope)
+resource "google_api_gateway_gateway" "visitor_counter_gateway" {
+  provider    = google-beta
+  gateway_id  = "visitor-counter-gateway"
+  api_config  = google_api_gateway_api_config.visitor_counter_api_config.name
+
+  depends_on = [google_api_gateway_api_config.visitor_counter_api_config]
+}
+
+locals {
+  apis = [
+    "analyticshub.googleapis.com",
+    "apigateway.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigqueryconnection.googleapis.com",
+    "bigquerydatapolicy.googleapis.com",
+    "bigquerymigration.googleapis.com",
+    "bigqueryreservation.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "cloudapis.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "containerregistry.googleapis.com",
+    "dataform.googleapis.com",
+    "dataplex.googleapis.com",
+    "datastore.googleapis.com",
+    "firebaserules.googleapis.com",
+    "firestore.googleapis.com",
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "pubsub.googleapis.com",
+    "run.googleapis.com",
+    "servicecontrol.googleapis.com",
+    "servicemanagement.googleapis.com",
+    "serviceusage.googleapis.com",
+    "sql-component.googleapis.com",
+    "storage-api.googleapis.com",
+    "storage-component.googleapis.com",
+    "storage.googleapis.com"
+  ]
 }
