@@ -16,7 +16,7 @@ resource "google_api_gateway_api" "visitor_counter_api" {
 # API Gateway API Configuration
 resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   provider = google-beta
-  api      = google_api_gateway_api.id
+  api      = google_api_gateway_api.visitor_counter_api.id
 
   openapi_documents {
     document {
