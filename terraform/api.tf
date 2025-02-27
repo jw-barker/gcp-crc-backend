@@ -60,7 +60,7 @@ locals {
     "dataplex.googleapis.com",
     "datastore.googleapis.com",
     "firebaserules.googleapis.com",
-    "firestore.googleapis.com"
+    "firestore.googleapis.com",
     "firestoredatabase.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
