@@ -13,10 +13,13 @@ resource "google_api_gateway_api" "visitor_counter_api" {
   depends_on = [google_project_service.enable_apis["apigateway.googleapis.com"]]
 }
 
-# API Gateway API Configuration
+# API Gateway API Configuration with automatic versioning
 resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   provider = google-beta
-  api      = google_api_gateway_api.visitor_counter_api.id
+  api      = google_api_gateway_api.visitor_counter_api.api_id
+
+  # Generate a new config ID for each deployment
+  api_config_id = "visitor-counter-config-v${timestamp()}"
 
   openapi_documents {
     document {
@@ -24,15 +27,19 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
       contents = filebase64("${path.module}/openapi.yaml")
     }
   }
+
+  # Avoid conflicts by creating new config before destroying the old one
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-# Create the API Gateway
+# Create the API Gateway with dynamic config updates
 resource "google_api_gateway_gateway" "visitor_counter_gateway" {
   provider   = google-beta
   gateway_id = "visitor-counter-gateway"
   api_config = google_api_gateway_api_config.visitor_counter_api_config.id
 
-  # Ensure correct creation order and avoid deletion conflicts
   depends_on = [
     google_api_gateway_api.visitor_counter_api,
     google_api_gateway_api_config.visitor_counter_api_config
