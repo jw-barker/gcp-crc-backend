@@ -4,23 +4,20 @@ resource "google_firestore_database" "default" {
   name        = "(default)"
   location_id = "australia-southeast1"
   type        = "DATASTORE_MODE"
+
+  delete_protection_state = "DELETE_PROTECTION_DISABLED"
+  deletion_policy         = "DELETE"
 }
 
-# Create an entity in Firestore (Datastore mode) using Datastore API
-resource "google_datastore_entity" "visitor_counter" {
-  project = var.project_id
-  kind    = "visitorCounter"
+# Create a Firestore document in Datastore mode
+resource "google_firestore_document" "visitor_counter" {
+  project     = var.project_id
+  database    = "(default)"
+  collection  = "visitorCounter"
+  document_id = "counter"
 
-  # Define the entity key (similar to document ID)
-  key {
-    path {
-      kind = "visitorCounter"
-      name = "counter"  # Acts as the document ID
-    }
-  }
-
-  # Define the properties of the entity
-  properties = jsonencode({
+  # Define the fields of the document
+  fields = jsonencode({
     name  = { stringValue = "counter" }
     count = { integerValue = 46 }
   })
