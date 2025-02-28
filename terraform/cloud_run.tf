@@ -5,7 +5,7 @@ resource "google_cloud_run_service" "visitor_counter" {
   template {
     spec {
       containers {
-        image = "australia-southeast1-docker.pkg.dev/${var.project_id}/cloud-run-source-deploy/${var.image_name}"
+        image = "australia-southeast1-docker.pkg.dev/${var.project_id}/cloud-run-source-deploy/${var.image_name}:latest"
         ports {
           container_port = 8080
           name           = "http1"
@@ -63,6 +63,7 @@ resource "google_artifact_registry_repository" "cloud_run_source_deploy" {
 
 # 🚀 Build & Push Docker image
 resource "null_resource" "docker_build_push" {
+  depends_on = [google_artifact_registry_repository.cloud_run_source_deploy]
   provisioner "local-exec" {
     command = <<EOT
       gcloud builds submit --tag australia-southeast1-docker.pkg.dev/${var.project_id}/cloud-run-source-deploy/${var.image_name} .

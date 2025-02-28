@@ -23,7 +23,7 @@ paths:
                 type: string
             type: object
       x-google-backend:
-        address: https://${API_GATEWAY_URL}
+        address: https://visitor-counter-132533164584.australia-southeast1.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       x-google-cors:
         allowOrigins:
@@ -44,7 +44,7 @@ paths:
         '204':
           description: CORS preflight response
       x-google-backend:
-        address: https://${API_GATEWAY_URL}
+        address: https://visitor-counter-132533164584.australia-southeast1.run.app
         path_translation: APPEND_PATH_TO_ADDRESS
       x-google-cors:
         allowOrigins:

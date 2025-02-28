@@ -2,7 +2,7 @@
 resource "google_project_service" "enable_apis" {
   for_each = toset(local.apis)
   project  = var.project_id
-  service  = each.key
+  service  = each.value
   disable_on_destroy = true
 }
 
@@ -20,7 +20,7 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
 
   # Generate a simplified config ID without special characters
   api_config_id = "visitor-counter-config-v${formatdate("YYYYMMDDHHmmss", timestamp())}"
-  
+
   openapi_documents {
     document {
       path     = "openapi.yaml"
@@ -46,7 +46,7 @@ resource "google_api_gateway_gateway" "visitor_counter_gateway" {
 
   lifecycle {
     # Ensure the gateway is not destroyed when the config is updated
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   depends_on = [

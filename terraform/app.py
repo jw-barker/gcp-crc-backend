@@ -27,13 +27,19 @@ def visit():
         key = client.key(kind, entity_id)
         entity = client.get(key)
 
+        # If the entity doesn't exist, create it with an initial count of 1
         if not entity:
-            logging.error('Counter not found in Firestore.')
-            return jsonify({'error': 'Counter not found in Firestore'}), 404
+            logging.info('Counter not found. Creating new counter entity.')
+            entity = datastore.Entity(key)
+            entity['count'] = 1
+            client.put(entity)
+            response = make_response(jsonify({'count': entity['count']}), 200)
+            response.headers['Access-Control-Allow-Origin'] = 'https://jw-barker.com'
+            return response
 
+        # Otherwise, increment the counter
         entity['count'] += 1
         client.put(entity)
-
         response = make_response(jsonify({'count': entity['count']}), 200)
         response.headers['Access-Control-Allow-Origin'] = 'https://jw-barker.com'
         return response
