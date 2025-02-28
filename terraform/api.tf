@@ -13,13 +13,13 @@ resource "google_api_gateway_api" "visitor_counter_api" {
   depends_on = [google_project_service.enable_apis["apigateway.googleapis.com"]]
 }
 
-# API Gateway API Configuration with automatic versioning
+# API Gateway API Configuration with safer ID formatting
 resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   provider = google-beta
   api      = google_api_gateway_api.visitor_counter_api.api_id
 
-  # Generate a new config ID for each deployment
-  api_config_id = "visitor-counter-config-v${replace(timestamp(), "[:TZ-]", "")}"
+  # Generate a simplified config ID without special characters
+  api_config_id = "visitor-counter-config-v${formatdate("YYYYMMDDHHmmss", timestamp())}"
 
   openapi_documents {
     document {
@@ -31,6 +31,10 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
   # Avoid conflicts by creating new config before destroying the old one
   lifecycle {
     create_before_destroy = true
+    # Ignore changes to avoid unnecessary updates
+    ignore_changes = [
+      api_config_id
+    ]
   }
 }
 
@@ -39,6 +43,11 @@ resource "google_api_gateway_gateway" "visitor_counter_gateway" {
   provider   = google-beta
   gateway_id = "visitor-counter-gateway"
   api_config = google_api_gateway_api_config.visitor_counter_api_config.id
+
+  lifecycle {
+    # Ensure the gateway is not destroyed when the config is updated
+    prevent_destroy = true
+  }
 
   depends_on = [
     google_api_gateway_api.visitor_counter_api,
