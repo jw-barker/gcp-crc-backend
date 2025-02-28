@@ -20,7 +20,7 @@ resource "google_api_gateway_api_config" "visitor_counter_api_config" {
 
   # Generate a simplified config ID without special characters
   api_config_id = "visitor-counter-config-v${formatdate("YYYYMMDDHHmmss", timestamp())}"
-
+  
   openapi_documents {
     document {
       path     = "openapi.yaml"
